@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}{{ book.title }} – BookVerse{% endblock %}
+
+{% block head %}
+<style>
+  .detail-wrap { padding: 2.5rem 0; }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    color: var(--muted); text-decoration: none; font-size: 0.85rem;
+    margin-bottom: 2rem; transition: color 1.8s;
+  }
+  .back-link:hover { color: var(--accent); }
+
+  .detail-top { display: flex; gap: 2.5rem; align-items: flex-start; margin-bottom: 3rem; }
+  .detail-cover {
+    width: 210px; flex-shrink: 0; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 16px 50px rgba(0,0,0,0.5);
+  }
+  .detail-cover img { width: 100%; display: block; }
+  .detail-info { flex: 1; }
+  .detail-info h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 800; color: var(--text);
+    line-height: 1.2; margin-bottom: 0.4rem;
+  }
+  .detail-info .author-line { font-size: 1rem; color: var(--muted); margin-bottom: 1.2rem; }
+  .detail-info .author-line strong { color: var(--accent2); }
+  .meta-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.4rem; }
+  .meta-pill {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 0.25rem 0.75rem; border-radius: 99px;
+    font-size: 0.78rem; color: var(--muted);
+    display: inline-flex; align-items: center; gap: 0.3rem;
+  }
+  .rating-block {
+    display: inline-flex; align-items: center; gap: 1rem;
+    background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 10px; padding: 0.8rem 1.3rem; margin-bottom: 1.4rem;
+  }
+  .rating-num { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 800; color: var(--gold); line-height: 1; }
+  .rating-count { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+
+  .similar-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 1.1rem;
+  }
+
+  .empty-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 2rem; text-align: center; color: var(--muted);
+  }
+
+  @media (max-width: 620px) {
+    .detail-top { flex-direction: column; }
+    .detail-cover { width: 150px; margin: 0 auto; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap detail-wrap">
+
+  <a class="back-link" href="javascript:history.back()">
+    <i class="fa fa-arrow-left"></i> Back
+  </a>
+
+  <div class="detail-top">
+    <div class="detail-cover">
+      <img src="{{ book.image }}" alt="{{ book.title }}"
+           onerror="this.src='https://placehold.co/210x290/1a1a28/6366f1?text=Book'">
+    </div>
+    <div class="detail-info">
+      <h1>{{ book.title }}</h1>
+      <div class="author-line">by <strong>{{ book.author }}</strong></div>
+
+      <div class="meta-pills">
+        {% if book.year and book.year != 'nan' %}
+        <span class="meta-pill"><i class="fa fa-calendar"></i> {{ book.year }}</span>
+        {% endif %}
+        {% if book.publisher and book.publisher != 'nan' %}
+        <span class="meta-pill"><i class="fa fa-building"></i> {{ book.publisher }}</span>
+        {% endif %}
+      </div>
+
+      {% if avg_rating %}
+      <div class="rating-block">
+        <div class="rating-num">{{ avg_rating }}</div>
+        <div>
+          <div class="rating-count">{{ num_ratings }} community ratings</div>
+        </div>
+
+      </div>
+      {% endif %}
+
+      <form action="/recommend_books" method="post" style="display:inline;">
+        <br>
+        <input type="hidden" name="user_input" value="{{ book.title }}">
+        <button type="submit" class="btn-primary">
+          <i class="fa fa-search"></i> Find Similar Books
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <hr class="hr">
+
+  {% if similar %}
+  <div style="margin-bottom: 2.5rem;">
+    <h2 class="section-heading" style="font-size:1.4rem; margin-bottom:1.2rem;">Readers Also Enjoyed</h2>
+    <div class="similar-grid">
+      {% for s in similar %}
+      <a href="/book?title={{ s.title|urlencode }}" style="text-decoration:none; display:block; height:100%;">
+        <div class="book-card">
+          <img src="{{ s.image }}" alt="{{ s.title }}"
+               onerror="this.src='https://placehold.co/175x200/1a1a28/6366f1?text=Book'">
+          <div class="book-card-body">
+            <div class="book-title">{{ s.title }}</div>
+            <div class="book-author">{{ s.author }}</div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

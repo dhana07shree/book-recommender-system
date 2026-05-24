@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}BookVerse{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg:      #0c0c14;
+      --surface: #14141f;
+      --card:    #1a1a28;
+      --border:  #272738;
+      --accent:  #6366f1;
+      --accent2: #818cf8;
+      --gold:    #c9a84c;
+      --text:    #d8d8e8;
+      --muted:   #7a7a9a;
+      --danger:  #e05c5c;
+      --success: #4caf7d;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Inter', sans-serif; min-height: 100vh; line-height: 1.65;
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--surface); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .navbar {
+      position: sticky; top: 0; z-index: 999;
+      background: rgba(12,12,20,0.96);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      display: flex; align-items: center;
+      padding: 0 2.5rem; height: 64px; gap: 1rem;
+    }
+    .brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 800;
+      color: var(--text); text-decoration: none;
+      letter-spacing: -0.02em; white-space: nowrap;
+    }
+    .brand em { color: var(--accent); font-style: normal; }
+    .nav-links { display: flex; align-items: center; gap: 0.15rem; flex: 1; margin-left: 1.5rem; }
+    .nav-links a {
+      padding: 0.4rem 0.85rem; border-radius: 7px;
+      color: var(--muted); text-decoration: none;
+      font-size: 0.86rem; font-weight: 500; transition: all 0.18s;
+    }
+    .nav-links a:hover { color: var(--text); background: var(--border); }
+    .nav-links a.active { color: var(--accent2); background: rgba(99,102,241,0.1); }
+
+    .flash-area { padding: 0.7rem 2.5rem 0; }
+    .flash {
+      padding: 0.65rem 1rem; border-radius: 8px;
+      font-size: 0.86rem; margin-bottom: 0.4rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .flash.success { background: rgba(76,175,125,0.1); border: 1px solid rgba(76,175,125,0.3); color: var(--success); }
+    .flash.error   { background: rgba(224,92,92,0.1);  border: 1px solid rgba(224,92,92,0.3);  color: var(--danger); }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.6rem 1.4rem; border-radius: 8px;
+      background: var(--accent); color: #fff;
+      font-size: 0.88rem; font-weight: 600;
+      border: none; cursor: pointer; text-decoration: none;
+      font-family: 'Inter', sans-serif; transition: opacity 0.18s;
+    }
+    .btn-primary:hover { opacity: 0.87; }
+
+    .book-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+      display: flex; flex-direction: column; height: 100%;
+      transition: all 0.22s; cursor: pointer;
+    }
+    .book-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 10px 30px rgba(99,102,241,0.15);
+    }
+    .book-card img { width: 100%; height: 220px; object-fit: cover; }
+    .book-card-body {
+      padding: 0.85rem; flex: 1;
+      display: flex; flex-direction: column; gap: 0.22rem;
+    }
+    .book-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.9rem; font-weight: 600; color: var(--text); line-height: 1.3;
+    }
+    .book-author { font-size: 0.76rem; color: var(--muted); }
+    .book-meta { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: auto; padding-top: 0.4rem; }
+    .badge {
+      font-size: 0.68rem; font-weight: 600;
+      padding: 0.15rem 0.48rem; border-radius: 99px;
+      display: inline-flex; align-items: center; gap: 0.2rem;
+    }
+    .badge-gold   { background: rgba(201,168,76,0.12); color: var(--gold); }
+    .badge-accent { background: rgba(99,102,241,0.12); color: var(--accent2); }
+
+    .section-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem; font-weight: 800; color: var(--text);
+    }
+    .section-heading span { color: var(--accent); }
+
+    .books-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .field {
+      width: 100%; padding: 0.75rem 1rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text);
+      font-family: 'Inter', sans-serif; font-size: 0.9rem;
+      outline: none;
+       transition: border-color 0.18s;
+    }
+    .field:focus { border-color: var(--accent); }
+    .field::placeholder { color: var(--muted); }
+
+    .wrap { max-width: 1220px; margin: 0 auto; padding: 0 1.5rem; }
+    .hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+    footer {
+      border-top: 5px solid var(--border); margin-top: 5rem;
+      padding: 1.5rem 2rem; text-align: center;
+      color: var(--muted); font-size: 0.8rem;
+    }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="brand" href="/">Book<em>Verse</em></a>
+  <div class="nav-links">
+    <a href="/" {% if request.path == '/' %}class="active"{% endif %}>Home</a>
+    <a href="/recommend" {% if '/recommend' in request.path %}class="active"{% endif %}>Recommend</a>
+    <a href="/dashboard" {% if '/dashboard' in request.path %}class="active"{% endif %}>Analytics</a>
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-area">
+    {% for cat, msg in messages %}
+    <div class="flash {{ cat }}">
+      <i class="fa {% if cat == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+      {{ msg }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<footer>BookVerse &mdash; Discover Your Next Favorite Book</footer>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

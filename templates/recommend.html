@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}BookVerse – Recommend{% endblock %}
+
+{% block head %}
+<style>
+  .rec-hero {
+    padding: 4rem 1.5rem 5.5rem; text-align: center;
+    background: radial-gradient(ellipse 70% 50% at 50% -5%, rgba(99,102,241,0.1) 0%, transparent 70%);
+  }
+  .rec-hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
+
+    font-weight: 800; color: var(--text);
+    margin-bottom: 0.6rem;
+  }
+  .rec-hero p { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
+
+  /* Search bar */
+  .search-box {
+    max-width: 580px; margin: 0 auto; position: relative;
+  }
+  .search-row { display: flex; gap: 0.5rem; }
+  .search-row input { flex: 1; }
+  .ac-list {
+    position: absolute; top: calc(100% + 5px); left: 0; right: 80px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 9px;
+    z-index: 100; max-height: 260px; overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4); display: none;
+  }
+  .ac-list.open { display: block; }
+  .ac-item {
+    padding: 0.6rem 1rem; font-size: 0.87rem; cursor: pointer;
+    border-bottom: 1px solid var(--border); transition: background 0.15s;
+    display: flex; align-items: center; gap: 0.5rem; color: var(--text);
+  }
+  .ac-item:last-child { border-bottom: none; }
+  .ac-item:hover { background: var(--border); color: var(--accent2); }
+  .ac-item i { color: var(--accent); font-size: 0.75rem; }
+
+  /* Searched book info */
+  .found-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.4rem;
+    display: flex; gap: 1.2rem; align-items: flex-start;
+    max-width: 640px; margin: 2rem auto;
+  }
+  .found-card img { width: 85px; height: 115px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+  .found-info h3 { font-family: 'Playfair Display', serif; font-size: 1.15rem; margin-bottom: 0.3rem; }
+  .found-info p { font-size: 0.82rem; color: var(--muted); }
+  .found-tag {
+    display: inline-block; background: rgba(76,175,125,0.12);
+    border: 1px solid rgba(76,175,125,0.3); color: var(--success);
+    font-size: 0.72rem; font-weight: 600; padding: 0.15rem 0.55rem;
+    border-radius: 99px; margin-bottom: 0.5rem;
+  }
+
+  /* Error / suggestions */
+  .error-box {
+    background: rgba(224,92,92,0.08); border: 1px solid rgba(224,92,92,0.25);
+    border-radius: 10px; padding: 1.2rem 1.4rem; max-width: 520px; margin: 1rem auto;
+    text-align: center; color: var(--danger);
+  }
+  .suggest-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.4rem; max-width: 540px; margin: 1.5rem auto;
+  }
+  .suggest-box h3 { font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: 0.9rem; color: var(--text); }
+  .suggest-list { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+  .suggest-list li a {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 0.8rem; border-radius: 7px;
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); text-decoration: none; font-size: 0.87rem; transition: all 0.18s;
+  }
+  .suggest-list li a:hover { border-color: var(--accent); color: var(--accent2); }
+  .suggest-list li a i { color: var(--accent); font-size: 0.75rem; }
+
+  /* Results heading */
+  .results-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; font-weight: 700; color: var(--text); margin-bottom: 1.4rem;
+  }
+  .results-heading span { color: var(--accent); }
+
+  /* Results grid */
+  .rec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+    gap: 1.2rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="rec-hero">
+  <h1>Find Your Next Read</h1>
+  <p>Type a book title and uncover books you'll love next.</p>
+
+  <div class="search-box">
+    <form class="search-row" action="/recommend_books" method="post" id="recForm">
+      <input class="field" type="text" name="user_input" id="bookInput"
+             placeholder="Type a book title…"
+             value="{{ search_term or '' }}" autocomplete="off">
+      <button type="submit" class="btn-primary">
+        <i class="fa fa-search"></i> Recommend
+      </button>
+    </form>
+    <div class="ac-list" id="acList"></div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  {% if error %}
+  <div class="error-box">
+    <i class="fa fa-exclamation-circle" style="display:block;font-size:1.6rem;margin-bottom:0.5rem;"></i>
+    {{ error }}
+  </div>
+  {% endif %}
+
+  {% if suggestions %}
+  <div class="suggest-box">
+    <h3>Did you mean one of these?</h3>
+    <ul class="suggest-list">
+      {% for book in suggestions %}
+      <li>
+        <a href="#" onclick="pickSuggestion('{{ book }}'); return false;">
+          <i class="fa fa-book"></i> {{ book }}
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if data %}
+  <!-- Found book card -->
+  {% if search_term %}
+  <div class="found-card">
+    <div style="width:85px;height:115px;background:var(--card);border-radius:6px;flex-shrink:0;
+                display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:2rem;">
+      <i class="fa fa-book-open"></i>
+    </div>
+    <div class="found-info">
+      <span class="found-tag">✓ Found</span>
+      <h3>{{ search_term }}</h3>
+      <p>Showing {{ data|length }} similar books based on your selection.</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="results-heading">
+    Books similar to <span>"{{ search_term }}"</span>
+  </div>
+
+  <div class="rec-grid">
+    {% for book in data %}
+    <a href="/book?title={{ book.title|urlencode }}" style="text-decoration:none; display:block; height:100%;">
+      <div class="book-card">
+        <img src="{{ book.image }}" alt="{{ book.title }}"
+             onerror="this.src='https://placehold.co/200x220/1a1a28/6366f1?text=Book'">
+        <div class="book-card-body">
+          <div class="book-title">{{ book.title }}</div>
+          <div class="book-author">{{ book.author }}</div>
+          {% if book.year and book.year != 'nan' %}
+          <div style="font-size:0.74rem; color:var(--muted); margin-top:auto;">
+            <i class="fa fa-calendar" style="margin-right:0.2rem;"></i>{{ book.year }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const bookInput = document.getElementById('bookInput');
+const acList    = document.getElementById('acList');
+const titles    = {{ all_titles | tojson }};
+
+bookInput.addEventListener('input', function() {
+  const q = this.value.trim().toLowerCase();
+  if (q.length < 1) { acList.classList.remove('open'); return; }
+  const matches = titles.filter(t => t.toLowerCase().includes(q)).slice(0, 8);
+  if (matches.length === 0) { acList.classList.remove('open'); return; }
+  acList.innerHTML = matches.map(t =>
+    `<div class="ac-item" onclick="pickBook('${t.replace(/'/g, "\\'")}')">
+       <i class="fa fa-book"></i>${t}
+     </div>`
+  ).join('');
+  acList.classList.add('open');
+});
+
+function pickBook(title) {
+  bookInput.value = title;
+  acList.classList.remove('open');
+  bookInput.focus();
+}
+
+function pickSuggestion(title) {
+  bookInput.value = title;
+  document.getElementById('recForm').submit();
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-box')) acList.classList.remove('open');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}BookVerse – Top 50 Books{% endblock %}
+
+{% block head %}
+<style>
+  /* ── Hero ── */
+  .hero {
+    padding: 5rem 1.5rem 3.5rem;
+    text-align: center;
+    background: radial-gradient(ellipse 75% 55% at 50% -5%, rgba(99,102,241,0.13) 0%, transparent 70%);
+  }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25);
+    color: var(--accent2); border-radius: 99px;
+    padding: 0.28rem 0.9rem; font-size: 0.76rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 1.2rem;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 5.5vw, 4rem); font-weight: 800;
+    color: var(--text); line-height: 1.15; margin-bottom: 0.9rem;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub { color: var(--muted); font-size: 1rem; max-width: 480px; margin: 0 auto 2.5rem; }
+
+  /* ── Quotes strip ── */
+  .quote-strip {
+    background: var(--surface); border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 1.2rem 1.5rem; margin-bottom: 3rem; overflow: hidden;
+  }
+  .quote-track {
+    display: flex; gap: 4rem;
+   animation: scrollquotes 40s linear infinite;
+    white-space: nowrap;
+  }
+  .quote-track:hover { animation-play-state: paused; }
+  .quote-item {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 0.84rem; color: var(--muted); font-style: italic;
+    flex-shrink: 0;
+  }
+  .quote-item i { color: var(--gold); font-size: 0.7rem; }
+  @keyframes scrollquotes {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── Filter bar ── */
+  .filter-bar {
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+    margin-bottom: 1.8rem;
+  }
+  .chip {
+    padding: 0.32rem 0.9rem;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--surface); font-size: 0.8rem; font-weight: 500;
+    cursor: pointer; transition: all 0.18s;
+  }
+  .chip:hover, .chip.active {
+    background: rgba(99,102,241,0.12);
+    border-color: var(--accent); color: var(--accent2);
+  }
+
+  /* ── Rank badge ── */
+  .rank-tag {
+    position: absolute; top: 8px; left: 8px;
+    background: rgba(12,12,20,0.82); color: var(--gold);
+    font-size: 0.7rem; font-weight: 700;
+    padding: 0.15rem 0.48rem; border-radius: 5px;
+    font-family: 'Inter', sans-serif; backdrop-filter: blur(4px);
+  }
+<!--  .card-wrap { position: relative; }-->
+<!--  .card-wrap a { text-decoration: none; display: block; height: 100%; }-->
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-tag"><i class="fa fa-bookmark"></i> Reader Favorites</div>
+  <h1>Top <span>50</span> Books<br>Loved by Readers</h1>
+  <p class="hero-sub">Ranked by average ratings from our reading community.</p>
+</section>
+
+<!-- Scrolling quotes -->
+<div class="quote-strip">
+  <div class="quote-track">
+    <!-- First copy -->
+    <span class="quote-item"><i class="fa fa-quote-left"></i> "A reader lives a thousand lives before he dies." — George R.R. Martin</span>
+    <span class="quote-item"><i class="fa fa-quote-left"></i> "Not all those who wander are lost." — J.R.R. Tolkien</span>
+    <span class="quote-item"><i class="fa fa-quote-left"></i> "The more that you read, the more things you will know." — Dr. Seuss</span>
+    <span class="quote-item"><i class="fa fa-quote-left"></i> "A book is a dream that you hold in your hand." — Neil Gaiman</span>
+    <span class="quote-item"><i class="fa fa-quote-left"></i> "There is no friend as loyal as a book." — Ernest Hemingway</span>
+    <span class="quote-item"><i class="fa fa-quote-left"></i> "Books are mirrors of the soul." — Virginia Woolf</span>
+    <span class="quote-item"><i class="fa fa-quote-left"></i> "Reading is an exercise in empathy." — Malorie Blackman</span>
+    <!-- Duplicate for seamless loop -->
+    <span class="quote-item"><i class="fa fa-quote-left"></i> "A reader lives a thousand lives before he dies." — George R.R. Martin</span>
+    <span class="quote-item"><i class="fa fa-quote-left"></i> "Not all those who wander are lost." — J.R.R. Tolkien</span>
+    <span class="quote-item"><i class="fa fa-quote-left"></i> "The more that you read, the more things you will know." — Dr. Seuss</span>
+    <span class="quote-item"><i class="fa fa-quote-left"></i> "A book is a dream that you hold in your hand." — Neil Gaiman</span>
+    <span class="quote-item"><i class="fa fa-quote-left"></i> "There is no friend as loyal as a book." — Ernest Hemingway</span>
+    <span class="quote-item"><i class="fa fa-quote-left"></i> "Books are mirrors of the soul." — Virginia Woolf</span>
+    <span class="quote-item"><i class="fa fa-quote-left"></i> "Reading is an exercise in empathy." — Malorie Blackman</span>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- Filter chips -->
+  <div class="filter-bar">
+    <button class="chip active" onclick="filterBooks('all', this)">All Books</button>
+    <button class="chip" onclick="filterBooks('high', this)">Highest Rated</button>
+    <button class="chip" onclick="filterBooks('votes', this)">Most Voted</button>
+  </div>
+
+  <!-- Books grid -->
+  <div class="books-grid" id="booksGrid">
+    {% for i in range(book_name|length) %}
+    <div class="card-wrap"
+         data-rating="{{ rating[i] }}"
+         data-votes="{{ votes[i] }}">
+      <a href="/book?title={{ book_name[i]|urlencode }}">
+        <div class="book-card">
+          <div style="position:relative; overflow:hidden;">
+            <img src="{{ image[i] }}" alt="{{ book_name[i] }}"
+                 onerror="this.src='https://placehold.co/200x220/1a1a28/6366f1?text=Book'">
+            <div class="rank-tag">#{{ i + 1 }}</div>
+          </div>
+          <div class="book-card-body">
+            <div class="book-title">{{ book_name[i] }}</div>
+            <div class="book-author">{{ author[i] }}</div>
+            <div class="book-meta">
+              <span class="badge badge-gold"><i class="fa fa-star"></i> {{ rating[i] }}</span>
+              <span class="badge badge-accent"><i class="fa fa-users"></i> {{ votes[i] }}</span>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterBooks(type, el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const cards = document.querySelectorAll('.card-wrap');
+  cards.forEach(card => {
+    const rating = parseFloat(card.dataset.rating);
+    const votes  = parseInt(card.dataset.votes);
+    let show = true;
+    if (type === 'high')  show = rating >= 5;
+    if (type === 'votes') show = votes  >= 300;
+    card.style.display = show ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}
