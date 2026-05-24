@@ -155,6 +155,5 @@ def dashboard():
         rating_labels=list(buckets.keys()), rating_values=list(buckets.values()), stats=stats)
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
